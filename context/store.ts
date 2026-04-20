@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Action, CommunicationChannels, Powers, Status } from '../context/types'
+import { Action, CommunicationChannels, Powers, Status } from './types'
 import { Governed721DAO, CulturalStewardsDAO, defaultPowers101 } from './defaultProtocols';
 import { stringifyWithBigInt, parseWithBigInt } from '../utils/localStorage';
 
