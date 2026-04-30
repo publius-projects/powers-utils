@@ -6,6 +6,7 @@ import { useXmtpClient } from '@/hooks/useXmtpClient'
 import { useConnection } from 'wagmi'
 import type { Conversation, DecodedMessage, Identifier } from '@xmtp/browser-sdk'
 import { ConsentState, IdentifierKind } from '@xmtp/browser-sdk'
+import { ConnectButton } from '@/components/ConnectButton'
 
 interface GroupMemberInput {
   id: string
@@ -465,6 +466,11 @@ export default function ChatPage() {
                   {isConnected && `Connected as ${formatAddress(address!)}`}
                 </p>
                 {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
+                {!address && (
+                  <div className="mt-3">
+                    <ConnectButton />
+                  </div>
+                )}
               </div>
               
               {address && !isConnected && (
