@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 function extractSignature(commitMessage: string): string | null {
   const signatureRegex = /---ETH signature---([\s\S]*?)---ETH signature---/;
   const match = commitMessage.match(signatureRegex);
-  return match && match[1] ? match[1].trim() : null;
+  return match && match[1] ? match[1].trim() : null; 
 }
 
 // The actual endpoint
