@@ -57,7 +57,7 @@ export const getConstants = (chainId: number): Constants => {
 
       ZKPASSPORT_POWER_REGISTRY: `0xYourRegistryAddressHere`,
 
-      CULTURAL_STEWARDSHIP: `0x8da83ff5533e7842076f0B66Db1Dd3c5DE06C395`,
+      CULTURAL_STEWARDSHIP: `0xC7f2Cf4845C6db0e1a1e91ED41Bcd0FcC1b0E141`,
       CULTURAL_STEWARDSHIP_SIGNUP_MANDATE: 6,
       CULTURAL_STEWARDSHIP_WEBSITE: "www.enterhere.io"
     }
