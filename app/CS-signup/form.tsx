@@ -161,7 +161,7 @@ export function SignupForm({ preselectedIndex }: Props) {
             id="applicantUri"
             value={applicantUri}
             onChange={(e) => { resetWrite(); setApplicantUri(e.target.value) }}
-            placeholder="e.g. https://your-profile-url.com or ipfs://…"
+            placeholder="A brief description, no more than two sentences, of why you would like to join this ideas Layer."
             rows={3}
             className="w-full border-2 border-foreground bg-background px-4 py-2 text-base"
           />
