@@ -57,8 +57,8 @@ export const getConstants = (chainId: number): Constants => {
 
       ZKPASSPORT_POWER_REGISTRY: `0xYourRegistryAddressHere`,
 
-      CULTURAL_STEWARDSHIP: `0xC7f2Cf4845C6db0e1a1e91ED41Bcd0FcC1b0E141`,
-      CULTURAL_STEWARDSHIP_SIGNUP_MANDATE: 6,
+      CULTURAL_STEWARDSHIP: `0x9Cb669187D049a504303eac002B0E6B7cbAdf317`,
+      CULTURAL_STEWARDSHIP_SIGNUP_MANDATE: 8,
       CULTURAL_STEWARDSHIP_WEBSITE: "www.enterhere.io"
     }
     case 421614: // arb sepolia

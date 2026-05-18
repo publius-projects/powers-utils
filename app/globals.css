@@ -23,11 +23,9 @@ body {
   padding-top: env(safe-area-inset-top);      /* Standard */
   padding-bottom: constant(safe-area-inset-bottom); /* iOS < 11.2 */
   padding-bottom: env(safe-area-inset-bottom);      /* Standard */
-  background: #f1f5f9; /* slate-100 */
   font-family: Arial, Helvetica, sans-serif;
   color: var(--text-color);
-  display: flex;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 /* scrollbar changes layout */
@@ -119,10 +117,14 @@ body {
 }
 
 @layer base {
+  html {
+    @apply bg-background;
+  }
+
   * {
     @apply border-[color:hsl(var(--border))];
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
