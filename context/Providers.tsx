@@ -21,7 +21,7 @@ export function Providers({children}: {children: React.ReactNode}) {
   }, []);
 
   const privyConfig: PrivyClientConfig = {
-    defaultChain: arbitrumSepolia,
+    defaultChain: sepolia,
     supportedChains: [
       zksyncSepoliaTestnet,
       optimismSepolia,
