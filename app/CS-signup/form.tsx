@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { usePrivy, useWallets } from "@privy-io/react-auth"
-import { useReadContracts, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from "wagmi"
-import { encodeAbiParameters } from "viem"
+import { useSmartWallets } from "@privy-io/react-auth/smart-wallets"
+import { useReadContracts, useWaitForTransactionReceipt } from "wagmi"
+import { encodeAbiParameters, encodeFunctionData } from "viem"
 import { powersAbi } from "@/context/abi"
 import { getConstants } from "@/context/constants"
 import { FingerPrintIcon, ArrowPathIcon } from "@heroicons/react/24/outline"
@@ -16,17 +17,22 @@ type Props = {
 
 export function SignupForm({ preselectedIndex }: Props) {
   const { ready, authenticated, login, logout } = usePrivy()
-  const { ready: walletsReady, wallets } = useWallets()
-  const chainId = useChainId()
-  const { switchChain } = useSwitchChain()
-  const { writeContract, data: txHash, isPending, error: writeError, reset: resetWrite } = useWriteContract()
+  const { client } = useSmartWallets()
+  const { wallets } = useWallets()
+
+  const connectedAddress = wallets.find(w => w.walletClientType === 'privy')?.address as `0x${string}` | undefined
+  const isWrongChain = !!client && (client as { chain?: { id?: number } }).chain?.id !== TARGET_CHAIN_ID
+
+  const [isPending, setIsPending] = useState(false)
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined)
+  const [writeError, setWriteError] = useState<Error | null>(null)
+  const resetWrite = () => { setTxHash(undefined); setWriteError(null) }
+
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
 
   const constants = getConstants(TARGET_CHAIN_ID)
   const csAddress = constants.CULTURAL_STEWARDSHIP
   const signupMandateId = constants.CULTURAL_STEWARDSHIP_SIGNUP_MANDATE ?? 0
-
-  const connectedAddress = walletsReady && wallets[0] ? wallets[0].address as `0x${string}` : undefined
 
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>(undefined)
   const [applicantUri, setApplicantUri] = useState("")
@@ -91,9 +97,9 @@ export function SignupForm({ preselectedIndex }: Props) {
     }
   }, [preselectedIndex, holderNames.length])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!connectedAddress || selectedIndex === undefined) return
+    if (!connectedAddress || selectedIndex === undefined || !client) return
 
     const targetAddress = holderAddresses[selectedIndex]
     if (!targetAddress) return
@@ -105,20 +111,28 @@ export function SignupForm({ preselectedIndex }: Props) {
 
     const nonce = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER))
 
-    writeContract({
-      address: targetAddress,
+    const data = encodeFunctionData({
       abi: powersAbi,
       functionName: "request",
       args: [signupMandateId, calldata, nonce, "signup from form"],
-      chainId: TARGET_CHAIN_ID,
     })
+
+    setIsPending(true)
+    setWriteError(null)
+    try {
+      const hash = await client.sendTransaction({ to: targetAddress, data })
+      setTxHash(hash)
+    } catch (err) {
+      setWriteError(err as Error)
+    } finally {
+      setIsPending(false)
+    }
   }
 
-  const isSignedIn = ready && authenticated && walletsReady && !!wallets[0]
+  const isSignedIn = ready && authenticated && !!client
   const canSubmit = isSignedIn && selectedIndex !== undefined && !isPending && !isConfirming
-  const isWrongChain = chainId !== TARGET_CHAIN_ID && isSignedIn
 
-  console.log({ isSignedIn, canSubmit, isWrongChain, holderAddresses })
+  console.log({ isSignedIn, canSubmit, isWrongChain, connectedAddress, holderAddresses })
 
   return (
     <div style={{ fontFamily: "'Times New Roman', Times, serif" }} className="space-y-10 max-w-2xl mx-auto px-4 py-4">
@@ -207,7 +221,7 @@ export function SignupForm({ preselectedIndex }: Props) {
             Please switch to Sepolia to submit.{" "}
             <button
               type="button"
-              onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}
+              onClick={() => client?.switchChain({ id: TARGET_CHAIN_ID })}
               className="underline"
             >
               Switch network

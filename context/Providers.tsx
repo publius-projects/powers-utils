@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { PrivyClientConfig, PrivyProvider } from '@privy-io/react-auth';
+import { SmartWalletsProvider } from '@privy-io/react-auth/smart-wallets';
 import { arbitrumSepolia, baseSepolia, foundry, optimismSepolia, sepolia, zksyncSepoliaTestnet } from '@wagmi/core/chains'
 import { wagmiConfig } from './wagmiConfig'  
 import { WagmiProvider } from '@privy-io/wagmi';
@@ -41,7 +42,7 @@ export function Providers({children}: {children: React.ReactNode}) {
       ethereum: {
         createOnLogin: 'users-without-wallets',
       },
-    }
+    },
   };
 
   return (  
@@ -52,7 +53,9 @@ export function Providers({children}: {children: React.ReactNode}) {
         >
           <QueryClientProvider client={queryClient}>
             <WagmiProvider config={wagmiConfig}>
+              <SmartWalletsProvider>
                 {children}
+              </SmartWalletsProvider>
             </WagmiProvider>
           </QueryClientProvider>
       </PrivyProvider> 
