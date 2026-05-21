@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { usePrivy, useWallets } from "@privy-io/react-auth"
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets"
-import { useReadContracts, useWaitForTransactionReceipt } from "wagmi"
+import { useReadContracts, useWaitForTransactionReceipt, useSendTransaction, useChainId, useSwitchChain } from "wagmi"
 import { encodeAbiParameters, encodeFunctionData } from "viem"
 import { powersAbi } from "@/context/abi"
 import { getConstants } from "@/context/constants"
@@ -19,11 +19,19 @@ export function SignupForm({ preselectedIndex }: Props) {
   const { ready, authenticated, login, logout } = usePrivy()
   const { client } = useSmartWallets()
   const { wallets } = useWallets()
+  const { sendTransactionAsync } = useSendTransaction()
+  const currentChainId = useChainId()
+  const { switchChain } = useSwitchChain()
 
-  const eoaAddress = wallets.find(w => w.walletClientType === 'privy')?.address as `0x${string}` | undefined
+  const eoaWallet = wallets.find(w => w.walletClientType === 'privy') ?? wallets[0]
+  const eoaAddress = eoaWallet?.address as `0x${string}` | undefined
   const smartWalletAddress = (client as { account?: { address?: `0x${string}` } } | null)?.account?.address
   const connectedAddress = smartWalletAddress ?? eoaAddress
-  const isWrongChain = !!client && (client as { chain?: { id?: number } }).chain?.id !== TARGET_CHAIN_ID
+  const isWrongChain = authenticated && (
+    client
+      ? (client as { chain?: { id?: number } }).chain?.id !== TARGET_CHAIN_ID
+      : currentChainId !== TARGET_CHAIN_ID
+  )
 
   const [isPending, setIsPending] = useState(false)
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined)
@@ -101,7 +109,7 @@ export function SignupForm({ preselectedIndex }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!connectedAddress || selectedIndex === undefined || !client) return
+    if (!connectedAddress || selectedIndex === undefined) return
 
     const targetAddress = holderAddresses[selectedIndex]
     if (!targetAddress) return
@@ -122,7 +130,9 @@ export function SignupForm({ preselectedIndex }: Props) {
     setIsPending(true)
     setWriteError(null)
     try {
-      const hash = await client.sendTransaction({ to: targetAddress, data })
+      const hash = client
+        ? await client.sendTransaction({ to: targetAddress, data })
+        : await sendTransactionAsync({ to: targetAddress, data })
       setTxHash(hash)
     } catch (err) {
       setWriteError(err as Error)
@@ -131,7 +141,7 @@ export function SignupForm({ preselectedIndex }: Props) {
     }
   }
 
-  const isSignedIn = ready && authenticated && !!client
+  const isSignedIn = ready && authenticated && (!!client || !!eoaWallet)
   const canSubmit = isSignedIn && selectedIndex !== undefined && !isPending && !isConfirming
 
   console.log({ isSignedIn, canSubmit, isWrongChain, connectedAddress, holderAddresses })
@@ -223,7 +233,7 @@ export function SignupForm({ preselectedIndex }: Props) {
             Please switch to Sepolia to submit.{" "}
             <button
               type="button"
-              onClick={() => client?.switchChain({ id: TARGET_CHAIN_ID })}
+              onClick={() => client ? client.switchChain({ id: TARGET_CHAIN_ID }) : switchChain({ chainId: TARGET_CHAIN_ID })}
               className="underline"
             >
               Switch network
