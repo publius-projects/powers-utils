@@ -20,7 +20,9 @@ export function SignupForm({ preselectedIndex }: Props) {
   const { client } = useSmartWallets()
   const { wallets } = useWallets()
 
-  const connectedAddress = wallets.find(w => w.walletClientType === 'privy')?.address as `0x${string}` | undefined
+  const eoaAddress = wallets.find(w => w.walletClientType === 'privy')?.address as `0x${string}` | undefined
+  const smartWalletAddress = (client as { account?: { address?: `0x${string}` } } | null)?.account?.address
+  const connectedAddress = smartWalletAddress ?? eoaAddress
   const isWrongChain = !!client && (client as { chain?: { id?: number } }).chain?.id !== TARGET_CHAIN_ID
 
   const [isPending, setIsPending] = useState(false)
@@ -193,10 +195,10 @@ export function SignupForm({ preselectedIndex }: Props) {
             {ready ? (
               <button
                 type="button"
-                onClick={isSignedIn ? logout : login}
+                onClick={authenticated ? logout : login}
                 className="flex items-center gap-1.5 bg-foreground text-background border-2 border-foreground px-4 py-2 text-sm tracking-wider hover:opacity-80 transition-colors whitespace-nowrap"
               >
-                {isSignedIn ? (
+                {authenticated ? (
                   <>
                     <ArrowPathIcon className="h-4 w-4" />
                     Sign out
