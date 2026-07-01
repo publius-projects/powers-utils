@@ -70,7 +70,7 @@ function buildMcpServer() {
         if (index.length === 0) {
             log('Warning: search requested but index is empty');
             return {
-                content: [{ type: 'text', text: 'Index is empty. Run `pnpm ingest` in the ai-skill/ directory first.' }],
+                content: [{ type: 'text', text: 'Index is empty. Run `pnpm ingest` in the governance-rag/ directory first.' }],
             };
         }
         const start = Date.now();
